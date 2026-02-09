@@ -1,0 +1,37 @@
+{
+  "name": "blackcat",
+  "version": "0.0.1",
+  "description": "Software para gerenciamento de estoquesa",
+  "main": "server.js",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "start:staging": "NODE_ENV=staging node src/server.js",
+    "start:prod": "NODE_ENV=production node src/server.js",
+    "test": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test jest --runInBand --detectOpenHandles",
+    "test:watch": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test jest --watch --runInBand --detectOpenHandles"
+  },
+  "author": "Kenny Vargas",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.12.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/jest.setup.js"
+    ]
+  }
+}

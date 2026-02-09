@@ -1,0 +1,120 @@
+// src/controllers/produtoController.js
+
+const express = require("express");
+const produtoModel = require("../models/produtoModel");
+
+const router = express.Router();
+
+// GET /produto -> lista
+router.get("/", async (req, res) => {
+  try {
+    const produtos = await produtoModel.obterProdutos();
+    res.status(200).json(produtos);
+  } catch (err) {
+    console.error("Erro ao buscar produtos", err.message);
+    res.status(500).json({ message: "Erro ao buscar produtos" });
+  }
+});
+
+// GET /produto/:id -> um item
+router.get("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    // seu model atual retorna res.rows (array)
+    const rows = await produtoModel.obterProdutosPorID(id);
+    const produto = rows[0];
+
+    if (!produto) {
+      return res.status(404).json({ message: "Produto não encontrado" });
+    }
+
+    res.status(200).json(produto);
+  } catch (err) {
+    console.error("Erro ao buscar produto", err.message);
+    res.status(500).json({ message: "Erro ao buscar produto" });
+  }
+});
+
+// POST /produto -> cria e retorna o recurso criado
+router.post("/", async (req, res) => {
+  try {
+    const { nome, descricao, valor } = req.body;
+
+    // validação básica (melhor fazer no model também)
+    if (!nome || String(nome).trim() === "") {
+      return res.status(400).json({ message: "nome é obrigatório" });
+    }
+
+    const novoProduto = await produtoModel.criarProduto(nome, descricao, valor);
+
+    // 201 Created + corpo do recurso
+    // opcional: Location header apontando pro recurso
+    res.status(201).location(`/produto/${novoProduto.id}`).json(novoProduto);
+  } catch (err) {
+    console.error("Erro ao inserir produto", err.message);
+
+    // se o model lançou erro de validação
+    if (err.message && err.message.toLowerCase().includes("obrigatório")) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    res.status(500).json({ message: "Erro ao inserir produto" });
+  }
+});
+
+// PUT /produto/:id -> atualiza e retorna o recurso atualizado
+router.put("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    const { nome, descricao, valor } = req.body;
+    if (!nome || String(nome).trim() === "") {
+      return res.status(400).json({ message: "nome é obrigatório" });
+    }
+
+    const produtoAtualizado = await produtoModel.atualizarProduto(
+      id,
+      nome,
+      descricao,
+      valor,
+    );
+
+    // se não existia, update retorna undefined
+    if (!produtoAtualizado) {
+      return res.status(404).json({ message: "Produto não encontrado" });
+    }
+
+    res.status(200).json(produtoAtualizado);
+  } catch (err) {
+    console.error("Erro ao atualizar produto", err.message);
+    res.status(500).json({ message: "Erro ao atualizar produto" });
+  }
+});
+
+// DELETE /produto/:id -> 204 No Content (padrão REST)
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    // ideal: deletarProduto retornar quantidade deletada (rowCount)
+    // mas com seu model atual não dá pra saber se existia.
+    await produtoModel.deletarProduto(id);
+
+    return res.status(204).send();
+  } catch (err) {
+    console.error("Erro ao deletar produto", err.message);
+    res.status(500).json({ message: "Erro ao deletar produto" });
+  }
+});
+
+module.exports = router;

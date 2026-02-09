@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação do Sistema de Banco de Dados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        .script-container {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            overflow-x: auto;
+        }
+        .script-code {
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Documentação do Sistema de Banco de Dados</h1>
+
+    <h2>Requisitos do Sistema</h2>
+
+    <ul>
+        <li>Sistema para armazenar vários tipos de estoques, por exemplo, ferramentas e consumíveis.</li>
+        <li>Armazenamento das movimentações em um log que pode ser consultado posteriormente.</li>
+    </ul>
+
+    <h2>Detalhamento dos Requisitos das Tabelas:</h2>
+
+    <ul>
+        <li><strong>Tabela Produtos:</strong> Armazenar informações sobre os produtos, como nome e valor.</li>
+        <li><strong>Tabela Estoques:</strong> Registrar estoques disponíveis ao negócio, como nome e descrição.</li>
+        <li><strong>Tabela Produto_Estoque:</strong> Tabela de relacionamento entre Produtos e Estoques para registrar a quantidade de cada produto em cada estoque.</li>
+        <li><strong>Tabela Funcionários:</strong> Manter informações sobre os funcionários envolvidos nas movimentações de estoque.</li>
+        <li><strong>Tabela Movimentações:</strong> Registrar cada movimentação de estoque, incluindo data, tipo (entrada/saída), produto, quantidade e funcionário responsável.</li>
+    </ul>
+
+    <h2>Script de Criação do Banco de Dados:</h2>
+
+    <div class="script-container">
+        <pre class="script-code"><code>
+-- Script para criação do banco de dados e tabelas
+
+-- Criar o banco de dados (se ainda não existir)
+CREATE DATABASE IF NOT EXISTS estoque_db;
+USE estoque_db;
+
+-- Tabela Produtos: Armazenar informações sobre os produtos, como nome e valor.
+CREATE TABLE IF NOT EXISTS Produtos (
+    ProdutoID INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Valor DECIMAL NOT NULL
+);
+
+-- Tabela Estoques: Registrar estoques disponiveis ao negocio, como nome e descricao
+CREATE TABLE IF NOT EXISTS Estoques (
+    EstoqueID INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Descricao TEXT
+);
+
+-- Tabela Produto_Estoque: Tabela de relacionamento entre Produtos e Estoques para registrar a quantidade de cada produto em cada estoque.
+CREATE TABLE IF NOT EXISTS Produto_Estoque (
+    ProdutoEstoqueID INT AUTO_INCREMENT PRIMARY KEY,
+    ProdutoID INT,
+    EstoqueID INT,
+    Quantidade INT,
+    FOREIGN KEY (ProdutoID) REFERENCES Produtos(ProdutoID),
+    FOREIGN KEY (EstoqueID) REFERENCES Estoques(EstoqueID)
+);
+
+-- Tabela Funcionários: Manter informações sobre os funcionários envolvidos nas movimentações de estoque.
+CREATE TABLE IF NOT EXISTS Funcionarios (
+    FuncionarioID INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL
+);
+
+-- Tabela Movimentações: Registrar cada movimentação de estoque, incluindo data, tipo (entrada/saída), produto, quantidade e funcionário responsável.
+CREATE TABLE IF NOT EXISTS Movimentacoes (
+    MovimentacaoID INT AUTO_INCREMENT PRIMARY KEY,
+    Data DATE,
+    Tipo ENUM('ENTRADA', 'SAIDA'),
+    ProdutoID INT,
+    Quantidade INT,
+    FuncionarioID INT,
+    FOREIGN KEY (ProdutoID) REFERENCES Produtos(ProdutoID),
+    FOREIGN KEY (FuncionarioID) REFERENCES Funcionarios(FuncionarioID)
+);
+        </code></pre>
+    </div>
+
+</body>
+</html>
