@@ -55,62 +55,6 @@ const criarMovimentacao = async (
   }
 };
 
-const atualizarMovimentacao = async (
-  id,
-  data,
-  quantidade,
-  tipo,
-  produtoId,
-  funcionarioId,
-  estoqueId,
-) => {
-  try {
-    const query = `
-            UPDATE Movimentacoes
-            SET Data = $1, Quantidade = $2, Tipo = $3, fk_Produto_ID = $4, fk_Funcionario_ID = $5, fk_Estoque_ID = $6
-            WHERE ID = $7
-            RETURNING ID, Data, Quantidade, Tipo, fk_Funcionario_ID, fk_Estoque_ID, fk_Produto_ID
-        `;
-    const values = [
-      data,
-      quantidade,
-      tipo,
-      produtoId,
-      funcionarioId,
-      estoqueId,
-      id,
-    ];
-    const result = await pool.query(query, values);
-    return result.rows[0];
-  } catch (error) {
-    throw new Error("Erro ao atualizar movimentação: " + error.message);
-  }
-};
-
-const deletarMovimentacao = async (id) => {
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-
-    const movimentacao = await obterMovimentacaoPorId(id, client);
-    if (!movimentacao) {
-      throw new Error(`Movimentação com ID ${id} não encontrada.`);
-    }
-
-    const query = `
-            DELETE FROM Movimentacoes WHERE ID = $1 RETURNING *
-        `;
-    const result = await client.query(query, [id]);
-    await client.query("COMMIT");
-    return result.rows[0];
-  } catch (error) {
-    await client.query("ROLLBACK");
-    throw new Error("Erro ao deletar movimentação: " + error.message);
-  } finally {
-    client.release();
-  }
-};
-
 const obterMovimentacaoPorId = async (id, client = pool) => {
   try {
     const query = `
@@ -137,7 +81,5 @@ const obterMovimentacaoPorId = async (id, client = pool) => {
 module.exports = {
   obterMovimentacoes,
   criarMovimentacao,
-  atualizarMovimentacao,
-  deletarMovimentacao,
   obterMovimentacaoPorId,
 };

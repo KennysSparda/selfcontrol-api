@@ -86,7 +86,6 @@ async function updateFuncionario(funcionarioID, funcionarioData) {
         funcionarioID,
       ];
       await client.query(updateFuncionarioQuery, updateFuncionarioValues);
-      console.log(updateFuncionarioValues);
     }
 
     await client.query("COMMIT");

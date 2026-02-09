@@ -14,7 +14,7 @@ describe("ProdutoEstoque API", () => {
     expect(res.statusCode).toBe(201);
     expect(res.body.id).toBeDefined();
 
-    return res.body; // { id, nome, ... }
+    return res.body;
   }
 
   async function criarEstoque(overrides = {}) {
@@ -29,7 +29,7 @@ describe("ProdutoEstoque API", () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.id).toBeDefined();
 
-    return res.body; // { id, nome, ... }
+    return res.body;
   }
 
   test("GET /produto-estoque: deve listar vazio (array)", async () => {
@@ -55,10 +55,10 @@ describe("ProdutoEstoque API", () => {
     expect(res.statusCode).toBe(200);
 
     // retorno do model: { ProdutoEstoqueID, ProdutoID, EstoqueID, Quantidade }
-    expect(res.body.ProdutoEstoqueID).toBeDefined();
-    expect(res.body.ProdutoID).toBe(produto.id);
-    expect(res.body.EstoqueID).toBe(estoque.id);
-    expect(res.body.Quantidade).toBe(5);
+    expect(res.body.produtoestoqueid).toBeDefined();
+    expect(res.body.produtoid).toBe(produto.id);
+    expect(res.body.estoqueid).toBe(estoque.id);
+    expect(res.body.quantidade).toBe(5);
   });
 
   test("GET /produto-estoque: deve listar pelo menos 1 após vincular", async () => {
@@ -78,12 +78,12 @@ describe("ProdutoEstoque API", () => {
 
     // valida campos mais comuns do SELECT join
     const item = res.body[0];
-    expect(item.ProdutoEstoqueID).toBeDefined();
-    expect(item.ProdutoID).toBeDefined();
-    expect(item.EstoqueID).toBeDefined();
-    expect(item.Quantidade).toBeDefined();
-    expect(item.NomeProduto).toBeDefined();
-    expect(item.NomeEstoque).toBeDefined();
+    expect(item.produtoestoqueid).toBeDefined();
+    expect(item.produtoid).toBeDefined();
+    expect(item.estoqueid).toBeDefined();
+    expect(item.quantidade).toBeDefined();
+    expect(item.nomeproduto).toBeDefined();
+    expect(item.nomeestoque).toBeDefined();
   });
 
   test("GET /produto-estoque/:estoqueId: deve listar produtos do estoque específico", async () => {
@@ -119,10 +119,10 @@ describe("ProdutoEstoque API", () => {
 
     // deve vir só itens do estoque1
     res.body.forEach((row) => {
-      expect(row.EstoqueID).toBe(estoque1.id);
-      expect(row.ProdutoID).toBeDefined();
-      expect(row.Quantidade).toBeDefined();
-      expect(row.NomeProduto).toBeDefined();
+      expect(row.estoqueid).toBe(estoque1.id);
+      expect(row.produtoid).toBeDefined();
+      expect(row.quantidade).toBeDefined();
+      expect(row.nomeproduto).toBeDefined();
     });
 
     expect(res.body.length).toBe(2);
@@ -138,7 +138,8 @@ describe("ProdutoEstoque API", () => {
       Quantidade: 7,
     });
 
-    const produtoEstoqueId = vinculo.body.ProdutoEstoqueID;
+    const produtoEstoqueId = vinculo.body.produtoestoqueid;
+
     expect(produtoEstoqueId).toBeDefined();
 
     const del = await request(app).delete(
