@@ -24,7 +24,6 @@ router.get("/:id", async (req, res) => {
       return res.status(400).json({ message: "ID inválido" });
     }
 
-    // seu model atual retorna res.rows (array)
     const rows = await produtoModel.obterProdutosPorID(id);
     const produto = rows[0];
 
@@ -44,20 +43,16 @@ router.post("/", async (req, res) => {
   try {
     const { nome, descricao, valor } = req.body;
 
-    // validação básica (melhor fazer no model também)
     if (!nome || String(nome).trim() === "") {
       return res.status(400).json({ message: "nome é obrigatório" });
     }
 
     const novoProduto = await produtoModel.criarProduto(nome, descricao, valor);
 
-    // 201 Created + corpo do recurso
-    // opcional: Location header apontando pro recurso
     res.status(201).location(`/produto/${novoProduto.id}`).json(novoProduto);
   } catch (err) {
     console.error("Erro ao inserir produto", err.message);
 
-    // se o model lançou erro de validação
     if (err.message && err.message.toLowerCase().includes("obrigatório")) {
       return res.status(400).json({ message: err.message });
     }
@@ -86,7 +81,6 @@ router.put("/:id", async (req, res) => {
       valor,
     );
 
-    // se não existia, update retorna undefined
     if (!produtoAtualizado) {
       return res.status(404).json({ message: "Produto não encontrado" });
     }
@@ -106,8 +100,6 @@ router.delete("/:id", async (req, res) => {
       return res.status(400).json({ message: "ID inválido" });
     }
 
-    // ideal: deletarProduto retornar quantidade deletada (rowCount)
-    // mas com seu model atual não dá pra saber se existia.
     await produtoModel.deletarProduto(id);
 
     return res.status(204).send();

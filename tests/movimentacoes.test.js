@@ -143,7 +143,7 @@ describe("Movimentacoes API", () => {
         fk_Funcionario_ID: funcionario.id,
       });
 
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(201);
 
       const depois = await obterQuantidadeProdutoNoEstoque(
         produto.id,
@@ -170,7 +170,7 @@ describe("Movimentacoes API", () => {
         fk_Funcionario_ID: funcionario.id,
       });
 
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(201);
 
       const depois = await obterQuantidadeProdutoNoEstoque(
         produto.id,
@@ -192,7 +192,7 @@ describe("Movimentacoes API", () => {
         fk_Funcionario_ID: funcionario.id,
       });
 
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(201);
       expect(res.body).toBeDefined();
 
       // o teu service/model pode devolver id em formatos diferentes

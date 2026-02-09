@@ -11,7 +11,7 @@ describe("Testes de Estoques", () => {
 
     const res = await request(app).post("/estoque").send(novoEstoque);
 
-    expect(res.statusCode).toEqual(200);
+    expect(res.statusCode).toEqual(201);
     expect(res.body.id).toBeDefined();
     expect(res.body.nome).toEqual(novoEstoque.nome);
     expect(res.body.descricao).toEqual(novoEstoque.descricao);
@@ -70,7 +70,7 @@ describe("Testes de Estoques", () => {
 
     const res = await request(app).delete(`/estoque/${id}`);
 
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.deleted).toEqual(true);
+    expect(res.statusCode).toEqual(204);
+    expect(res.body).toEqual({});
   });
 });

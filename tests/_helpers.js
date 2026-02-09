@@ -31,7 +31,7 @@ async function criarEstoque(overrides = {}) {
   };
 
   const res = await request(app).post("/estoque").send(payload);
-  expect(res.statusCode).toBe(200);
+  expect(res.statusCode).toBe(201);
   expect(res.body.id).toBeDefined();
 
   return res.body; // { id, ... }
@@ -74,7 +74,7 @@ async function criarMovimentacao(overrides = {}) {
   };
 
   const res = await request(app).post("/movimentacoes").send(payload);
-  expect(res.statusCode).toBe(200);
+  expect(res.statusCode).toBe(201);
 
   return res.body;
 }

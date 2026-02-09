@@ -35,7 +35,7 @@ router.post("/", async (req, res) => {
       fk_Funcionario_ID,
       fk_Estoque_ID,
     );
-    res.json(novaMovimentacao);
+    res.status(201).json(novaMovimentacao);
   } catch (err) {
     if (process.env.NODE_ENV !== "test") {
       console.error("Erro ao inserir movimentação", err.message);

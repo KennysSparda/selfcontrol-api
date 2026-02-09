@@ -24,7 +24,6 @@ describe("Produtos API", () => {
       expect(res.body.nome).toEqual(payload.nome);
       expect(res.body.descricao).toEqual(payload.descricao);
 
-      // DECIMAL pode voltar string
       expect(String(res.body.valor)).toEqual(String(payload.valor));
     });
 
@@ -51,7 +50,7 @@ describe("Produtos API", () => {
     });
 
     test("inválido: rota errada deve retornar 404", async () => {
-      const res = await request(app).get("/produtos"); // propositalmente errado
+      const res = await request(app).get("/produtos");
       expect(res.statusCode).toEqual(404);
     });
   });
@@ -109,9 +108,6 @@ describe("Produtos API", () => {
       });
 
       expect([404, 200]).toContain(res.statusCode);
-      // Se você implementou o 404 quando não encontra (recomendado), vai ser 404.
-      // Se ainda não implementou, pode voltar 200/500 dependendo do model/controller.
-      // O ideal aqui é fixar em 404 quando seu update retornar undefined.
     });
   });
 
@@ -125,7 +121,6 @@ describe("Produtos API", () => {
       const res = await request(app).delete(`/produto/${id}`);
 
       expect(res.statusCode).toEqual(204);
-      // 204 não tem body
     });
 
     test("inválido: id inválido deve retornar 400", async () => {
