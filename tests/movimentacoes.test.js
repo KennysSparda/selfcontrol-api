@@ -29,7 +29,7 @@ async function vincularProdutoNoEstoque(produtoId, estoqueId, quantidade) {
     EstoqueID: estoqueId,
     Quantidade: quantidade,
   });
-  expect(res.statusCode).toBe(200);
+  expect(res.statusCode).toBe(201);
   expect(res.body).toBeDefined();
   return res.body;
 }

@@ -17,7 +17,7 @@ const loginLimiter = rateLimit({
 router.get("/", async (req, res) => {
   try {
     const funcionarios = await FuncionarioModel.obterFuncionarios();
-    res.json(funcionarios);
+    res.status(200).json(funcionarios);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao buscar funcionários." });
@@ -58,7 +58,7 @@ router.put("/:id", async (req, res) => {
       nivelacesso,
     };
     await FuncionarioModel.updateFuncionario(funcionarioID, dadosAtualizados);
-    res.json({ message: "Funcionário atualizado com sucesso." });
+    res.status(200).json({ message: "Funcionário atualizado com sucesso." });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao atualizar funcionário." });
@@ -70,7 +70,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const funcionarioID = req.params.id;
     await FuncionarioModel.deleteFuncionario(funcionarioID);
-    res.json({ message: "Funcionário deletado com sucesso." });
+    res.status(204).json({});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao deletar funcionário." });

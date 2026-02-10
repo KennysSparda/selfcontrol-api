@@ -51,10 +51,8 @@ describe("ProdutoEstoque API", () => {
 
     const res = await request(app).post("/produto-estoque").send(payload);
 
-    // teu controller dá res.json(novaEntrada) (sem status explícito)
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(201);
 
-    // retorno do model: { ProdutoEstoqueID, ProdutoID, EstoqueID, Quantidade }
     expect(res.body.produtoestoqueid).toBeDefined();
     expect(res.body.produtoid).toBe(produto.id);
     expect(res.body.estoqueid).toBe(estoque.id);
@@ -145,8 +143,7 @@ describe("ProdutoEstoque API", () => {
     const del = await request(app).delete(
       `/produto-estoque/${produtoEstoqueId}`,
     );
-    expect(del.statusCode).toBe(200);
-    expect(del.body.deleted).toBe(true);
+    expect(del.statusCode).toBe(204);
 
     // garante que não aparece mais no GET por estoque
     const res = await request(app).get(`/produto-estoque/${estoque.id}`);

@@ -8,10 +8,10 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const movimentacoes = await movimentacoesModel.obterMovimentacoes();
-    res.json(movimentacoes);
+    res.status(200).json(movimentacoes);
   } catch (err) {
     console.error("Erro ao buscar movimentações", err.message);
-    res.status(500).send("Erro ao buscar movimentações");
+    res.status(500).json({ message: "Erro ao obter movimentação" });
   }
 });
 

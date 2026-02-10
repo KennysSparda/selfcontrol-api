@@ -7,10 +7,10 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const produtosEstoque = await ProdutoEstoqueModel.obterProdutoEstoque();
-    res.json(produtosEstoque);
+    res.status(200).json(produtosEstoque);
   } catch (err) {
     console.error("Erro ao buscar produtos em estoque", err.message);
-    res.status(500).send("Erro ao buscar produtos em estoque");
+    res.status(500).json({ message: "Erro ao buscar produtos em estoque" });
   }
 });
 
@@ -20,15 +20,15 @@ router.get("/:id", async (req, res) => {
   try {
     const produtosPorEstoque =
       await ProdutoEstoqueModel.obterProdutosPorEstoque(estoqueId);
-    res.json(produtosPorEstoque);
+    res.status(200).json(produtosPorEstoque);
   } catch (err) {
     console.error(
       `Erro ao buscar produtos do estoque com ID ${estoqueId}`,
       err.message,
     );
-    res
-      .status(500)
-      .send(`Erro ao buscar produtos do estoque com ID ${estoqueId}`);
+    res.status(500).json({
+      message: `Erro ao buscar produtos do estoque com ID ${estoqueId}`,
+    });
   }
 });
 
@@ -43,15 +43,20 @@ router.post("/", async (req, res) => {
         EstoqueID,
         Quantidade,
       );
-      res.json(novaEntrada);
+      res.status(201).json(novaEntrada);
     } catch (err) {
       console.error("Erro ao inserir entrada de Produto_Estoque", err.message);
-      res.status(500).send("Erro ao inserir entrada de Produto_Estoque");
+      res
+        .status(500)
+        .json({ message: "Erro ao inserir entrada de Produto_Estoque" });
     }
   } else {
     console.error(
       `Alguns dados nao estao chegando: ProdutoID: ${ProdutoID}, EstoqueID: ${EstoqueID}, Qntd: ${Quantidade}`,
     );
+    res.status(500).json({
+      message: `Alguns dados nao estao chegando: ProdutoID: ${ProdutoID}, EstoqueID: ${EstoqueID}, Qntd: ${Quantidade}`,
+    });
   }
 });
 
@@ -67,10 +72,10 @@ router.put("/:id", async (req, res) => {
         EstoqueID,
         Quantidade,
       );
-    res.json(produtoEstoqueAtualizado);
+    res.status(200).json(produtoEstoqueAtualizado);
   } catch (err) {
     console.error("Erro ao atualizar produto em estoque", err.message);
-    res.status(500).send("Erro ao atualizar produto em estoque");
+    res.status(500).json({ message: "Erro ao atualizar produto em estoque" });
   }
 });
 
@@ -79,10 +84,10 @@ router.delete("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     await ProdutoEstoqueModel.removerProdutoDoEstoque(id);
-    res.json({ deleted: true });
+    res.status(204).send();
   } catch (err) {
     console.error("Erro ao deletar produto em estoque", err.message);
-    res.status(500).send("Erro ao deletar produto em estoque");
+    res.status(500).json({ message: "Erro ao deletar produto em estoque" });
   }
 });
 

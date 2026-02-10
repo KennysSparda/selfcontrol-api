@@ -75,8 +75,7 @@ describe("Testes de Funcionários", () => {
 
     const res = await request(app).delete(`/funcionario/${id}`);
 
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.message).toEqual("Funcionário deletado com sucesso.");
+    expect(res.statusCode).toEqual(204);
   });
 
   test("Login deve retornar 401 com credenciais inválidas", async () => {
