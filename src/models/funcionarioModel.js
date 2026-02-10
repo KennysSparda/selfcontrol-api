@@ -4,6 +4,8 @@ const { pool } = require("../db");
 
 const bcrypt = require("bcrypt");
 
+const rounds = Number(process.env.BCRYPT_ROUNDS || 10);
+
 async function obterFuncionarios() {
   try {
     const client = await pool.connect();
@@ -22,7 +24,7 @@ async function createFuncionario(funcionarioData) {
   try {
     await client.query("BEGIN");
 
-    const hashedPassword = await bcrypt.hash(funcionarioData.senha, 10);
+    const hashedPassword = await bcrypt.hash(funcionarioData.senha, rounds);
     const funcionarioQuery = `
             INSERT INTO Funcionario (Nome, Cargo, Usuario, HashSenha, NivelAcesso)
             VALUES ($1, $2, $3, $4, $5)
@@ -57,7 +59,7 @@ async function updateFuncionario(funcionarioID, funcionarioData) {
     await client.query("BEGIN");
 
     if (funcionarioData.senha) {
-      const hashedPassword = await bcrypt.hash(funcionarioData.senha, 10);
+      const hashedPassword = await bcrypt.hash(funcionarioData.senha, rounds);
       const updateFuncionarioQuery = `
                 UPDATE Funcionario
                 SET Nome = $1, Cargo = $2, Usuario = $3, HashSenha = $4, NivelAcesso = $5
@@ -82,7 +84,7 @@ async function updateFuncionario(funcionarioID, funcionarioData) {
         funcionarioData.nome,
         funcionarioData.cargo,
         funcionarioData.usuario,
-        funcionarioData.nivelacesso || 1,
+        funcionarioData.nivelacesso,
         funcionarioID,
       ];
       await client.query(updateFuncionarioQuery, updateFuncionarioValues);

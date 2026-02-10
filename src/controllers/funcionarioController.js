@@ -70,7 +70,7 @@ router.delete("/:id", async (req, res) => {
   try {
     const funcionarioID = req.params.id;
     await FuncionarioModel.deleteFuncionario(funcionarioID);
-    res.status(204).json({});
+    res.status(204).end();
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao deletar funcionário." });
@@ -101,9 +101,12 @@ router.post("/login", loginLimiter, async (req, res) => {
     }
 
     const token = jwt.sign(
-      { sub: String(dados.id), nivelacesso: dados.nivelacesso },
+      { nivelacesso: dados.nivelacesso },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "8h" },
+      {
+        subject: String(dados.id),
+        expiresIn: process.env.JWT_EXPIRES_IN || "8h",
+      },
     );
 
     return res.json({
