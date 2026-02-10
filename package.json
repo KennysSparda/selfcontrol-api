@@ -12,7 +12,9 @@
     "start:staging": "NODE_ENV=staging node src/server.js",
     "start:prod": "NODE_ENV=production node src/server.js",
     "test": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test jest --runInBand --detectOpenHandles",
-    "test:watch": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test jest --watch --runInBand --detectOpenHandles"
+    "test:watch": "NODE_ENV=test DOTENV_CONFIG_PATH=.env.test jest --watch --runInBand --detectOpenHandles",
+    "lint:prettier:check": "prettier --check .",
+    "lint:prettier:fix": "prettier --write ."
   },
   "author": "Kenny Vargas",
   "license": "MIT",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "prettier": "^3.8.1",
     "supertest": "^7.0.0"
   },
   "jest": {
