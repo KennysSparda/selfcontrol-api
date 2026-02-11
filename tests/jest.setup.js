@@ -4,6 +4,7 @@ dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || ".env.test" });
 
 const { pool } = require("../src/db");
 const { initDatabase } = require("../src/models/databaseModel");
+const { ensureTestAdmin } = require("./_seedTestAdmin");
 
 async function limparBanco() {
   await pool.query(`
@@ -19,10 +20,16 @@ async function limparBanco() {
 
 beforeAll(async () => {
   await initDatabase({ silent: true });
+
+  // garante admin mesmo no primeiro run
+  await ensureTestAdmin();
 });
 
 beforeEach(async () => {
   await limparBanco();
+
+  // como TRUNCATE apaga funcionario, precisa recriar admin sempre
+  await ensureTestAdmin();
 });
 
 afterAll(async () => {

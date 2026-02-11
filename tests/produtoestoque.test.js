@@ -1,7 +1,12 @@
-const request = require("supertest");
-const app = require("../src/app");
+const { authRequest } = require("./_helpers");
 
 describe("ProdutoEstoque API", () => {
+  let api;
+
+  beforeAll(async () => {
+    api = await authRequest();
+  });
+
   async function criarProduto(overrides = {}) {
     const payload = {
       nome: "Produto PE",
@@ -10,7 +15,7 @@ describe("ProdutoEstoque API", () => {
       ...overrides,
     };
 
-    const res = await request(app).post("/produto").send(payload);
+    const res = await api.post("/produto").send(payload);
     expect(res.statusCode).toBe(201);
     expect(res.body.id).toBeDefined();
 
@@ -25,7 +30,7 @@ describe("ProdutoEstoque API", () => {
       ...overrides,
     };
 
-    const res = await request(app).post("/estoque").send(payload);
+    const res = await api.post("/estoque").send(payload);
     expect(res.statusCode).toBe(201);
     expect(res.body.id).toBeDefined();
 
@@ -33,7 +38,7 @@ describe("ProdutoEstoque API", () => {
   }
 
   test("GET /produto-estoque: deve listar vazio (array)", async () => {
-    const res = await request(app).get("/produto-estoque");
+    const res = await api.get("/produto-estoque");
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(0);
@@ -49,7 +54,7 @@ describe("ProdutoEstoque API", () => {
       Quantidade: 5,
     };
 
-    const res = await request(app).post("/produto-estoque").send(payload);
+    const res = await api.post("/produto-estoque").send(payload);
 
     expect(res.statusCode).toBe(201);
 
@@ -63,13 +68,13 @@ describe("ProdutoEstoque API", () => {
     const produto = await criarProduto({ nome: "Produto List" });
     const estoque = await criarEstoque({ nome: "Estoque List" });
 
-    await request(app).post("/produto-estoque").send({
+    await api.post("/produto-estoque").send({
       ProdutoID: produto.id,
       EstoqueID: estoque.id,
       Quantidade: 3,
     });
 
-    const res = await request(app).get("/produto-estoque");
+    const res = await api.get("/produto-estoque");
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThanOrEqual(1);
@@ -92,26 +97,26 @@ describe("ProdutoEstoque API", () => {
     const estoque2 = await criarEstoque({ nome: "Estoque 2" });
 
     // vincula 2 produtos no estoque1
-    await request(app).post("/produto-estoque").send({
+    await api.post("/produto-estoque").send({
       ProdutoID: produto1.id,
       EstoqueID: estoque1.id,
       Quantidade: 2,
     });
 
-    await request(app).post("/produto-estoque").send({
+    await api.post("/produto-estoque").send({
       ProdutoID: produto2.id,
       EstoqueID: estoque1.id,
       Quantidade: 4,
     });
 
     // vincula 1 produto no estoque2
-    await request(app).post("/produto-estoque").send({
+    await api.post("/produto-estoque").send({
       ProdutoID: produto1.id,
       EstoqueID: estoque2.id,
       Quantidade: 1,
     });
 
-    const res = await request(app).get(`/produto-estoque/${estoque1.id}`);
+    const res = await api.get(`/produto-estoque/${estoque1.id}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
 
@@ -130,7 +135,7 @@ describe("ProdutoEstoque API", () => {
     const produto = await criarProduto({ nome: "Produto Delete Vinculo" });
     const estoque = await criarEstoque({ nome: "Estoque Delete Vinculo" });
 
-    const vinculo = await request(app).post("/produto-estoque").send({
+    const vinculo = await api.post("/produto-estoque").send({
       ProdutoID: produto.id,
       EstoqueID: estoque.id,
       Quantidade: 7,
@@ -140,13 +145,11 @@ describe("ProdutoEstoque API", () => {
 
     expect(produtoEstoqueId).toBeDefined();
 
-    const del = await request(app).delete(
-      `/produto-estoque/${produtoEstoqueId}`,
-    );
+    const del = await api.delete(`/produto-estoque/${produtoEstoqueId}`);
     expect(del.statusCode).toBe(204);
 
     // garante que não aparece mais no GET por estoque
-    const res = await request(app).get(`/produto-estoque/${estoque.id}`);
+    const res = await api.get(`/produto-estoque/${estoque.id}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(0);

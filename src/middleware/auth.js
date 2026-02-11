@@ -30,7 +30,7 @@ function authenticate(required = true) {
         return res.status(401).json({ message: "Token inválido" });
       }
 
-      req.user = { id, nivelacesso, token: decoded };
+      req.user = { id, nivelacesso };
       return next();
     } catch (e) {
       return res.status(401).json({ message: "Token inválido ou expirado" });

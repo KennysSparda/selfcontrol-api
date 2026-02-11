@@ -1,7 +1,13 @@
-const request = require("supertest");
-const app = require("../src/app");
+// tests/funcionarios.test.js
+const { authRequest, request, app } = require("./_helpers");
 
 describe("Testes de Funcionários", () => {
+  let api;
+
+  beforeAll(async () => {
+    api = await authRequest();
+  });
+
   test("Deve criar um novo funcionário", async () => {
     const novoFuncionario = {
       nome: "Funcionário Teste",
@@ -11,7 +17,7 @@ describe("Testes de Funcionários", () => {
       nivelacesso: 1,
     };
 
-    const res = await request(app).post("/funcionario").send(novoFuncionario);
+    const res = await api.post("/funcionario").send(novoFuncionario);
 
     expect(res.statusCode).toEqual(201);
     expect(res.body.id).toBeDefined();
@@ -19,8 +25,8 @@ describe("Testes de Funcionários", () => {
   });
 
   test("Deve obter todos os funcionários", async () => {
-    // garante pelo menos 1
-    await request(app).post("/funcionario").send({
+    // garante pelo menos 1 além do admin seed
+    await api.post("/funcionario").send({
       nome: "Funcionário Seed",
       cargo: "Seed",
       usuario: "seed.func",
@@ -28,7 +34,7 @@ describe("Testes de Funcionários", () => {
       nivelacesso: 1,
     });
 
-    const res = await request(app).get("/funcionario");
+    const res = await api.get("/funcionario");
 
     expect(res.statusCode).toEqual(200);
     expect(Array.isArray(res.body)).toEqual(true);
@@ -36,7 +42,7 @@ describe("Testes de Funcionários", () => {
   });
 
   test("Deve atualizar um funcionário existente", async () => {
-    const criado = await request(app).post("/funcionario").send({
+    const criado = await api.post("/funcionario").send({
       nome: "Funcionário Update",
       cargo: "Antes",
       usuario: "update.func",
@@ -44,26 +50,25 @@ describe("Testes de Funcionários", () => {
       nivelacesso: 1,
     });
 
+    expect(criado.statusCode).toEqual(201);
     const id = criado.body.id;
 
     const funcionarioAtualizado = {
       nome: "Novo Nome do Funcionário",
       cargo: "Analista",
-      usuario: "update.func", // mantém o mesmo usuário pra não bater em constraint se tiver unique
+      usuario: "update.func",
       senha: "Update@123",
       nivelacesso: 2,
     };
 
-    const res = await request(app)
-      .put(`/funcionario/${id}`)
-      .send(funcionarioAtualizado);
+    const res = await api.put(`/funcionario/${id}`).send(funcionarioAtualizado);
 
     expect(res.statusCode).toEqual(200);
     expect(res.body.message).toEqual("Funcionário atualizado com sucesso.");
   });
 
   test("Deve deletar um funcionário", async () => {
-    const criado = await request(app).post("/funcionario").send({
+    const criado = await api.post("/funcionario").send({
       nome: "Funcionário Delete",
       cargo: "Apagar",
       usuario: "delete.func",
@@ -71,9 +76,10 @@ describe("Testes de Funcionários", () => {
       nivelacesso: 1,
     });
 
+    expect(criado.statusCode).toEqual(201);
     const id = criado.body.id;
 
-    const res = await request(app).delete(`/funcionario/${id}`);
+    const res = await api.delete(`/funcionario/${id}`);
 
     expect(res.statusCode).toEqual(204);
   });
@@ -89,7 +95,8 @@ describe("Testes de Funcionários", () => {
   });
 
   test("Login deve validar credenciais válidas", async () => {
-    await request(app).post("/funcionario").send({
+    // cria um funcionário (admin autenticado)
+    await api.post("/funcionario").send({
       nome: "Funcionário Login",
       cargo: "Suporte",
       usuario: "login.func",
@@ -97,6 +104,7 @@ describe("Testes de Funcionários", () => {
       nivelacesso: 1,
     });
 
+    // login é público (sem token)
     const res = await request(app).post("/funcionario/login").send({
       usuario: "login.func",
       senha: "Login@123",

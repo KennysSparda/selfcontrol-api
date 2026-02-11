@@ -1,4 +1,7 @@
 // tests/movimentacoes.test.js
+
+const { authRequest } = require("./_helpers");
+
 const {
   request,
   app,
@@ -15,7 +18,7 @@ async function setupBase() {
   await criarFuncionario({ usuario: "mov.func", nome: "Funcionario Mov" });
 
   // pega o ID real do funcionário (porque createFuncionario retorna só {id, message})
-  const funcionarios = await request(app).get("/funcionario");
+  const funcionarios = await api.get("/funcionario");
   expect(funcionarios.statusCode).toBe(200);
   const funcionario = funcionarios.body.find((f) => f.usuario === "mov.func");
   expect(funcionario).toBeDefined();
@@ -24,7 +27,7 @@ async function setupBase() {
 }
 
 async function vincularProdutoNoEstoque(produtoId, estoqueId, quantidade) {
-  const res = await request(app).post("/produto-estoque").send({
+  const res = await api.post("/produto-estoque").send({
     ProdutoID: produtoId,
     EstoqueID: estoqueId,
     Quantidade: quantidade,
@@ -35,9 +38,15 @@ async function vincularProdutoNoEstoque(produtoId, estoqueId, quantidade) {
 }
 
 describe("Movimentacoes API", () => {
+  let api;
+
+  beforeAll(async () => {
+    api = await authRequest();
+  });
+
   describe("GET /movimentacoes", () => {
     test("real: lista vazio quando não tem dados", async () => {
-      const res = await request(app).get("/movimentacoes");
+      const res = await api.get("/movimentacoes");
       expect(res.statusCode).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(0);
@@ -55,7 +64,7 @@ describe("Movimentacoes API", () => {
         fk_Funcionario_ID: funcionario.id,
       });
 
-      const res = await request(app).get("/movimentacoes");
+      const res = await api.get("/movimentacoes");
       expect(res.statusCode).toBe(200);
       expect(res.body.length).toBeGreaterThanOrEqual(1);
     });
@@ -72,7 +81,7 @@ describe("Movimentacoes API", () => {
         fk_Funcionario_ID: funcionario.id,
       });
 
-      const res = await request(app).get("/movimentacoes");
+      const res = await api.get("/movimentacoes");
       expect(res.statusCode).toBe(200);
 
       const row = res.body[0];
@@ -87,7 +96,7 @@ describe("Movimentacoes API", () => {
 
     test("extremo (batata): mesmo com FK zoada na criação (se passar), GET não pode quebrar", async () => {
       // dependendo do teu banco/constraints isso pode dar 500 no POST e tá tudo bem
-      const resPost = await request(app).post("/movimentacoes").send({
+      const resPost = await api.post("/movimentacoes").send({
         Data: new Date().toISOString(),
         Quantidade: 1,
         Tipo: 1,
@@ -98,7 +107,7 @@ describe("Movimentacoes API", () => {
 
       expect([200, 500]).toContain(resPost.statusCode);
 
-      const resGet = await request(app).get("/movimentacoes");
+      const resGet = await api.get("/movimentacoes");
       expect(resGet.statusCode).toBe(200);
       expect(Array.isArray(resGet.body)).toBe(true);
     });
@@ -117,7 +126,7 @@ describe("Movimentacoes API", () => {
         });
       }
 
-      const res = await request(app).get("/movimentacoes");
+      const res = await api.get("/movimentacoes");
       expect(res.statusCode).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThanOrEqual(10);
@@ -134,7 +143,7 @@ describe("Movimentacoes API", () => {
         estoque.id,
       );
 
-      const res = await request(app).post("/movimentacoes").send({
+      const res = await api.post("/movimentacoes").send({
         Data: new Date().toISOString(),
         Quantidade: 3,
         Tipo: 1,
@@ -161,7 +170,7 @@ describe("Movimentacoes API", () => {
         estoque.id,
       );
 
-      const res = await request(app).post("/movimentacoes").send({
+      const res = await api.post("/movimentacoes").send({
         Data: new Date().toISOString(),
         Quantidade: 4,
         Tipo: 2,
@@ -183,7 +192,7 @@ describe("Movimentacoes API", () => {
       const { produto, estoque, funcionario } = await setupBase();
       await vincularProdutoNoEstoque(produto.id, estoque.id, 5);
 
-      const res = await request(app).post("/movimentacoes").send({
+      const res = await api.post("/movimentacoes").send({
         Data: new Date().toISOString(),
         Quantidade: 1,
         Tipo: 1,
@@ -209,7 +218,7 @@ describe("Movimentacoes API", () => {
       const { produto, estoque } = await setupBase();
       await vincularProdutoNoEstoque(produto.id, estoque.id, 5);
 
-      const res = await request(app).post("/movimentacoes").send({
+      const res = await api.post("/movimentacoes").send({
         Data: new Date().toISOString(),
         Quantidade: 1,
         Tipo: 1,
@@ -235,7 +244,7 @@ describe("Movimentacoes API", () => {
         estoque.id,
       );
 
-      const res = await request(app).post("/movimentacoes").send({
+      const res = await api.post("/movimentacoes").send({
         // faltando fk_Produto_ID, etc
         Data: new Date().toISOString(),
         Quantidade: 1,

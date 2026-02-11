@@ -1,7 +1,13 @@
-const request = require("supertest");
-const app = require("../src/app");
+// tests/produtos.test.js
+const { authRequest } = require("./_helpers");
 
 describe("Produtos API", () => {
+  let api;
+
+  beforeAll(async () => {
+    api = await authRequest();
+  });
+
   // helper: cria produto e retorna o body
   async function criarProdutoPadrao(overrides = {}) {
     const payload = {
@@ -11,7 +17,7 @@ describe("Produtos API", () => {
       ...overrides,
     };
 
-    const res = await request(app).post("/produto").send(payload);
+    const res = await api.post("/produto").send(payload);
     return { res, payload };
   }
 
@@ -28,7 +34,7 @@ describe("Produtos API", () => {
     });
 
     test("inválido: sem nome deve retornar 400", async () => {
-      const res = await request(app).post("/produto").send({
+      const res = await api.post("/produto").send({
         descricao: "Sem nome",
         valor: "10.50",
       });
@@ -42,7 +48,7 @@ describe("Produtos API", () => {
     test("válido: lista produtos (200)", async () => {
       await criarProdutoPadrao({ nome: "Produto Seed List" });
 
-      const res = await request(app).get("/produto");
+      const res = await api.get("/produto");
 
       expect(res.statusCode).toEqual(200);
       expect(Array.isArray(res.body)).toEqual(true);
@@ -50,7 +56,7 @@ describe("Produtos API", () => {
     });
 
     test("inválido: rota errada deve retornar 404", async () => {
-      const res = await request(app).get("/produtos");
+      const res = await api.get("/produtos");
       expect(res.statusCode).toEqual(404);
     });
   });
@@ -62,7 +68,7 @@ describe("Produtos API", () => {
       });
       const id = criado.body.id;
 
-      const res = await request(app).get(`/produto/${id}`);
+      const res = await api.get(`/produto/${id}`);
 
       expect(res.statusCode).toEqual(200);
 
@@ -72,7 +78,7 @@ describe("Produtos API", () => {
     });
 
     test("inválido: id inválido deve retornar 400", async () => {
-      const res = await request(app).get("/produto/abc");
+      const res = await api.get("/produto/abc");
       expect(res.statusCode).toEqual(400);
       expect(res.body.message).toBeDefined();
     });
@@ -91,7 +97,7 @@ describe("Produtos API", () => {
         valor: "69.99",
       };
 
-      const res = await request(app).put(`/produto/${id}`).send(atualizado);
+      const res = await api.put(`/produto/${id}`).send(atualizado);
 
       expect(res.statusCode).toEqual(200);
       expect(res.body.id).toEqual(id);
@@ -101,7 +107,7 @@ describe("Produtos API", () => {
     });
 
     test("inválido: id inexistente deve retornar 404", async () => {
-      const res = await request(app).put("/produto/999999").send({
+      const res = await api.put("/produto/999999").send({
         nome: "Teste",
         descricao: "Teste",
         valor: "10.00",
@@ -118,13 +124,13 @@ describe("Produtos API", () => {
       });
       const id = criado.body.id;
 
-      const res = await request(app).delete(`/produto/${id}`);
+      const res = await api.delete(`/produto/${id}`);
 
       expect(res.statusCode).toEqual(204);
     });
 
     test("inválido: id inválido deve retornar 400", async () => {
-      const res = await request(app).delete("/produto/xyz");
+      const res = await api.delete("/produto/xyz");
       expect(res.statusCode).toEqual(400);
       expect(res.body.message).toBeDefined();
     });

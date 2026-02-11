@@ -1,7 +1,13 @@
-const request = require("supertest");
-const app = require("../src/app");
+// tests/estoques.test.js
+const { authRequest } = require("./_helpers");
 
 describe("Testes de Estoques", () => {
+  let api;
+
+  beforeAll(async () => {
+    api = await authRequest();
+  });
+
   test("Deve criar um novo estoque", async () => {
     const novoEstoque = {
       nome: "Estoque Teste",
@@ -9,7 +15,7 @@ describe("Testes de Estoques", () => {
       local: "Galpão 1",
     };
 
-    const res = await request(app).post("/estoque").send(novoEstoque);
+    const res = await api.post("/estoque").send(novoEstoque);
 
     expect(res.statusCode).toEqual(201);
     expect(res.body.id).toBeDefined();
@@ -20,13 +26,13 @@ describe("Testes de Estoques", () => {
 
   test("Deve obter todos os estoques", async () => {
     // garante que existe pelo menos 1, sem depender de estado anterior
-    await request(app).post("/estoque").send({
+    await api.post("/estoque").send({
       nome: "Estoque Seed",
       descricao: "Seed",
       local: "Seed",
     });
 
-    const res = await request(app).get("/estoque");
+    const res = await api.get("/estoque");
 
     expect(res.statusCode).toEqual(200);
     expect(Array.isArray(res.body)).toEqual(true);
@@ -35,7 +41,7 @@ describe("Testes de Estoques", () => {
 
   test("Deve atualizar um estoque existente", async () => {
     // cria primeiro
-    const criado = await request(app).post("/estoque").send({
+    const criado = await api.post("/estoque").send({
       nome: "Estoque Update",
       descricao: "Antes",
       local: "A1",
@@ -48,9 +54,7 @@ describe("Testes de Estoques", () => {
       local: "B2",
     };
 
-    const res = await request(app)
-      .put(`/estoque/${id}`)
-      .send(estoqueAtualizado);
+    const res = await api.put(`/estoque/${id}`).send(estoqueAtualizado);
 
     expect(res.statusCode).toEqual(200);
     expect(res.body.id).toEqual(id);
@@ -61,14 +65,14 @@ describe("Testes de Estoques", () => {
 
   test("Deve deletar um estoque", async () => {
     // cria primeiro
-    const criado = await request(app).post("/estoque").send({
+    const criado = await api.post("/estoque").send({
       nome: "Estoque Delete",
       descricao: "Apagar",
       local: "D1",
     });
     const id = criado.body.id;
 
-    const res = await request(app).delete(`/estoque/${id}`);
+    const res = await api.delete(`/estoque/${id}`);
 
     expect(res.statusCode).toEqual(204);
     expect(res.body).toEqual({});

@@ -18,7 +18,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(requestLogger);
+
+if (process.env.NODE_ENV != "test") app.use(requestLogger);
 
 app.use((req, res, next) => {
   if (req.path === "/funcionario/login") return next();
