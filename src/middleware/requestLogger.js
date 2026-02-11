@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const LOG_PATH = path.join(__dirname, "..", "logs", "requests.log");
+const LOG_PATH = path.join(__dirname, "..", "..", "logs", "requests.log");
 fs.mkdirSync(path.dirname(LOG_PATH), { recursive: true });
 
 const stream = fs.createWriteStream(LOG_PATH, { flags: "a" });
