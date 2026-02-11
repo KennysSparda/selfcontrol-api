@@ -1,46 +1,54 @@
+// src/services/movimentacoesService.js
+const { pool } = require("../db");
 const movimentacoesModel = require("../models/movimentacoesModel");
 const produtoEstoqueService = require("./produtoEstoqueService");
 
-const obterTipoMovimentacao = (id) => {
-  return id === 1 || id === 2 ? true : false;
-};
+function isTipoMovimentacaoValido(tipo) {
+  return tipo === 1 || tipo === 2;
+}
 
-const criarMovimentacao = async (
+async function criarMovimentacao(
   Data,
   Quantidade,
   Tipo,
   fk_Produto_ID,
   fk_Funcionario_ID,
   estoqueid,
-) => {
+) {
+  const client = await pool.connect();
+
   try {
-    const tipoMovimentacao = await obterTipoMovimentacao(Tipo);
-    if (!tipoMovimentacao) {
+    // validações "rápidas" antes de abrir transação pesada
+    if (!isTipoMovimentacaoValido(Tipo)) {
       throw new Error(`Tipo de movimentação com ID ${Tipo} não encontrado.`);
     }
 
+    await client.query("BEGIN");
+
     if (Tipo === 1) {
-      // ID 1 representa movimentação de entrada
-      await processarEntrada(Quantidade, fk_Produto_ID, estoqueid);
-    } else if (Tipo === 2) {
-      // ID 2 representa movimentação de saída
+      await processarEntrada(client, Quantidade, fk_Produto_ID, estoqueid);
+    }
+
+    if (Tipo === 2) {
       const quantidadeDisponivel =
         await produtoEstoqueService.obterQuantidadeProdutoNoEstoque(
           fk_Produto_ID,
           estoqueid,
+          client,
         );
+
       if (quantidadeDisponivel < Quantidade) {
+        await client.query("ROLLBACK");
         return {
           success: false,
           message: "Quantidade insuficiente no estoque.",
         };
       }
-      await processarSaida(Quantidade, fk_Produto_ID, estoqueid);
-    } else {
-      throw new Error(`Tipo de movimentação com ID ${Tipo} não suportado.`);
+
+      await processarSaida(client, Quantidade, fk_Produto_ID, estoqueid);
     }
 
-    // Criar a movimentação após processar entrada ou saída
+    // grava movimentação no MESMO client (transação)
     const novaMovimentacao = await movimentacoesModel.criarMovimentacao(
       Data,
       Quantidade,
@@ -48,19 +56,30 @@ const criarMovimentacao = async (
       fk_Produto_ID,
       fk_Funcionario_ID,
       estoqueid,
+      client,
     );
+
+    await client.query("COMMIT");
     return { success: true, movimentacao: novaMovimentacao };
   } catch (error) {
+    try {
+      await client.query("ROLLBACK");
+    } catch (rollbackError) {
+      console.error("Falha no ROLLBACK:", rollbackError);
+    }
     throw new Error("Erro ao criar movimentação: " + error.message);
+  } finally {
+    client.release();
   }
-};
+}
 
-const processarEntrada = async (Quantidade, fk_Produto_ID, estoqueid) => {
+async function processarEntrada(client, Quantidade, fk_Produto_ID, estoqueid) {
   try {
     const existeProdutoNoEstoque =
       await produtoEstoqueService.verificarExistenciaProdutoNoEstoque(
         fk_Produto_ID,
         estoqueid,
+        client,
       );
 
     if (existeProdutoNoEstoque) {
@@ -68,40 +87,45 @@ const processarEntrada = async (Quantidade, fk_Produto_ID, estoqueid) => {
         fk_Produto_ID,
         estoqueid,
         Quantidade,
+        client,
       );
-    } else {
-      await produtoEstoqueService.vincularProdutoAoEstoque(
-        fk_Produto_ID,
-        estoqueid,
-        Quantidade,
-      );
+      return;
     }
+
+    await produtoEstoqueService.vincularProdutoAoEstoque(
+      fk_Produto_ID,
+      estoqueid,
+      Quantidade,
+      client,
+    );
   } catch (error) {
     throw new Error("Erro ao processar entrada de produto: " + error.message);
   }
-};
+}
 
-const processarSaida = async (Quantidade, fk_Produto_ID, estoqueid) => {
+async function processarSaida(client, Quantidade, fk_Produto_ID, estoqueid) {
   try {
     const existeProdutoNoEstoque =
       await produtoEstoqueService.verificarExistenciaProdutoNoEstoque(
         fk_Produto_ID,
         estoqueid,
+        client,
       );
 
-    if (existeProdutoNoEstoque) {
-      await produtoEstoqueService.atualizarQuantidadeProdutoNoEstoqueService(
-        fk_Produto_ID,
-        estoqueid,
-        -Quantidade,
-      );
-    } else {
+    if (!existeProdutoNoEstoque) {
       throw new Error("Produto não existe no estoque.");
     }
+
+    await produtoEstoqueService.atualizarQuantidadeProdutoNoEstoqueService(
+      fk_Produto_ID,
+      estoqueid,
+      -Quantidade,
+      client,
+    );
   } catch (error) {
     throw new Error("Erro ao processar saída de produto: " + error.message);
   }
-};
+}
 
 module.exports = {
   criarMovimentacao,

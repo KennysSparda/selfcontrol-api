@@ -1,56 +1,70 @@
+// src/services/produtoEstoqueService.js
 const produtoEstoqueModel = require("../models/produtoEstoqueModel");
 
-const obterProdutoEstoque = async () => {
+const obterProdutoEstoque = async (client = null) => {
   try {
-    return await produtoEstoqueModel.obterProdutoEstoque();
+    return await produtoEstoqueModel.obterProdutoEstoque(client);
   } catch (error) {
     throw new Error("Erro ao obter ProdutoEstoque: " + error.message);
   }
 };
 
-const vincularProdutoAoEstoque = async (produtoId, estoqueId, quantidade) => {
+const vincularProdutoAoEstoque = async (
+  produtoId,
+  estoqueId,
+  quantidade,
+  client = null,
+) => {
   try {
     const produtoEstoque =
       await produtoEstoqueModel.obterProdutoEstoquePorProdutoEEstoque(
         produtoId,
         estoqueId,
+        client,
       );
 
     if (produtoEstoque) {
       // Se já existe, atualizar a quantidade
-      const existingQuantidade = produtoEstoque.quantidade + quantidade;
-      return await produtoEstoqueModel.atualizarQuantidadeProdutoNoEstoque(
+      const existingQuantidade =
+        Number(produtoEstoque.quantidade) + Number(quantidade);
+      return await produtoEstoqueModel.atualizarQuantidadeProdutoNoEstoqueModel(
         produtoEstoque.id,
         produtoId,
         estoqueId,
         existingQuantidade,
-      );
-    } else {
-      // Caso contrário, inserir um novo registro
-      return await produtoEstoqueModel.vincularProdutoAoEstoque(
-        produtoId,
-        estoqueId,
-        quantidade,
+        client,
       );
     }
+
+    // Caso contrário, inserir um novo registro
+    return await produtoEstoqueModel.vincularProdutoAoEstoque(
+      produtoId,
+      estoqueId,
+      quantidade,
+      client,
+    );
   } catch (error) {
     throw new Error("Erro ao vincular Produto ao Estoque: " + error.message);
   }
 };
 
-const removerProdutoDoEstoque = async (produtoId, estoqueId) => {
+const removerProdutoDoEstoque = async (produtoId, estoqueId, client = null) => {
   try {
     const produtoEstoque =
       await produtoEstoqueModel.obterProdutoEstoquePorProdutoEEstoque(
         produtoId,
         estoqueId,
+        client,
       );
 
     if (!produtoEstoque) {
       throw new Error("Produto não encontrado no estoque");
     }
 
-    await produtoEstoqueModel.removerProdutoDoEstoque(produtoEstoque.id);
+    await produtoEstoqueModel.removerProdutoDoEstoque(
+      produtoEstoque.id,
+      client,
+    );
   } catch (error) {
     throw new Error("Erro ao remover Produto do Estoque: " + error.message);
   }
@@ -60,27 +74,33 @@ const atualizarQuantidadeProdutoNoEstoqueService = async (
   produtoId,
   estoqueId,
   quantidade,
+  client = null,
 ) => {
   try {
     const produtoEstoque =
       await produtoEstoqueModel.obterProdutoEstoquePorProdutoEEstoque(
         produtoId,
         estoqueId,
+        client,
       );
+
     if (!produtoEstoque) {
       throw new Error("Produto não encontrado no estoque.");
     }
 
-    const novaQuantidade = produtoEstoque.quantidade + quantidade;
+    // FIX: antes era const e tentava reatribuir (bug)
+    let novaQuantidade = Number(produtoEstoque.quantidade) + Number(quantidade);
 
     if (novaQuantidade < 0) {
       novaQuantidade = 0;
     }
+
     return await produtoEstoqueModel.atualizarQuantidadeProdutoNoEstoqueModel(
       produtoEstoque.id,
       produtoId,
       estoqueId,
       novaQuantidade,
+      client,
     );
   } catch (error) {
     throw new Error(
@@ -90,20 +110,25 @@ const atualizarQuantidadeProdutoNoEstoqueService = async (
   }
 };
 
-const obterProdutosPorEstoque = async (estoqueId) => {
+const obterProdutosPorEstoque = async (estoqueId, client = null) => {
   try {
-    return await produtoEstoqueModel.obterProdutosPorEstoque(estoqueId);
+    return await produtoEstoqueModel.obterProdutosPorEstoque(estoqueId, client);
   } catch (error) {
     throw new Error("Erro ao obter produtos por estoque: " + error.message);
   }
 };
 
-const verificarExistenciaProdutoNoEstoque = async (produtoId, estoqueId) => {
+const verificarExistenciaProdutoNoEstoque = async (
+  produtoId,
+  estoqueId,
+  client = null,
+) => {
   try {
     const produtoEstoque =
       await produtoEstoqueModel.obterProdutoEstoquePorProdutoEEstoque(
         produtoId,
         estoqueId,
+        client,
       );
     return produtoEstoque !== null;
   } catch (error) {
@@ -113,17 +138,24 @@ const verificarExistenciaProdutoNoEstoque = async (produtoId, estoqueId) => {
   }
 };
 
-const obterQuantidadeProdutoNoEstoque = async (produtoId, estoqueId) => {
+const obterQuantidadeProdutoNoEstoque = async (
+  produtoId,
+  estoqueId,
+  client = null,
+) => {
   try {
     const produtoEstoque =
       await produtoEstoqueModel.obterProdutoEstoquePorProdutoEEstoque(
         produtoId,
         estoqueId,
+        client,
       );
+
     if (!produtoEstoque) {
       throw new Error("Produto não encontrado no estoque.");
     }
-    return produtoEstoque.quantidade;
+
+    return Number(produtoEstoque.quantidade);
   } catch (error) {
     throw new Error(
       "Erro ao obter quantidade de Produto no Estoque: " + error.message,
