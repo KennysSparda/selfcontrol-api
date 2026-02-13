@@ -66,41 +66,7 @@ async function criarMovimentacao(
   }
 }
 
-async function obterMovimentacaoPorId(id, client = null) {
-  try {
-    const db = getDb(client);
-
-    // Mantido como você tinha (inclui TipoMovimentacoes)
-    const query = `
-      SELECT 
-        m.ID,
-        m.Data,
-        m.Quantidade,
-        m.Tipo as tipoid,
-        m.fk_Funcionario_ID,
-        m.fk_Estoque_ID as estoqueid,
-        m.fk_Produto_ID,
-        tm.Nome as NomeTipoMovimentacao,
-        f.Nome as NomeFuncionario,
-        e.Nome as NomeEstoque,
-        p.Nome as NomeProduto,
-        p.ID as ProdutoID
-      FROM Movimentacoes m
-      JOIN TipoMovimentacoes tm ON m.Tipo = tm.ID
-      LEFT JOIN Funcionario f ON m.fk_Funcionario_ID = f.ID
-      LEFT JOIN Estoque e ON m.fk_Estoque_ID = e.ID
-      LEFT JOIN Produto p ON m.fk_Produto_ID = p.ID
-      WHERE m.ID = $1;
-    `;
-    const result = await db.query(query, [id]);
-    return result.rows[0];
-  } catch (error) {
-    throw new Error("Erro ao obter movimentação: " + error.message);
-  }
-}
-
 module.exports = {
   obterMovimentacoes,
   criarMovimentacao,
-  obterMovimentacaoPorId,
 };

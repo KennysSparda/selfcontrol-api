@@ -19,6 +19,24 @@ async function obterFuncionarios() {
   }
 }
 
+async function obterFuncionarioPorId(funcionarioID) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `
+      SELECT ID, Nome, Cargo, Usuario, NivelAcesso
+      FROM Funcionario
+      WHERE ID = $1
+      `,
+      [funcionarioID],
+    );
+
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
 async function createFuncionario(funcionarioData) {
   const client = await pool.connect();
   try {
@@ -155,6 +173,7 @@ async function validarCredenciais(usuario, senha) {
 
 module.exports = {
   obterFuncionarios,
+  obterFuncionarioPorId,
   createFuncionario,
   updateFuncionario,
   deleteFuncionario,

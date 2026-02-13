@@ -46,37 +46,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
-  try {
-    const funcionarioID = req.params.id;
-    const { nome, cargo, usuario, senha, nivelacesso } = req.body;
-    const dadosAtualizados = {
-      nome,
-      cargo,
-      usuario,
-      senha,
-      nivelacesso,
-    };
-    await FuncionarioModel.updateFuncionario(funcionarioID, dadosAtualizados);
-    res.status(200).json({ message: "Funcionário atualizado com sucesso." });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erro ao atualizar funcionário." });
-  }
-});
-
-// Rota para deletar um funcionário
-router.delete("/:id", async (req, res) => {
-  try {
-    const funcionarioID = req.params.id;
-    await FuncionarioModel.deleteFuncionario(funcionarioID);
-    res.status(204).end();
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erro ao deletar funcionário." });
-  }
-});
-
 // Rota para validar credenciais de login
 router.post("/login", loginLimiter, async (req, res) => {
   try {
@@ -121,6 +90,59 @@ router.post("/login", loginLimiter, async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Erro ao validar credenciais." });
+  }
+});
+
+// Rota para obter um funcionário por ID
+router.get("/:userId", async (req, res) => {
+  try {
+    const id = Number(req.params.userId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ message: "userId inválido." });
+    }
+
+    const funcionario = await FuncionarioModel.obterFuncionarioPorId(id);
+
+    if (!funcionario) {
+      return res.status(404).json({ message: "Funcionário não encontrado." });
+    }
+
+    return res.status(200).json(funcionario);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erro ao buscar funcionário." });
+  }
+});
+
+router.put("/:id", async (req, res) => {
+  try {
+    const funcionarioID = req.params.id;
+    const { nome, cargo, usuario, senha, nivelacesso } = req.body;
+    const dadosAtualizados = {
+      nome,
+      cargo,
+      usuario,
+      senha,
+      nivelacesso,
+    };
+    await FuncionarioModel.updateFuncionario(funcionarioID, dadosAtualizados);
+    res.status(200).json({ message: "Funcionário atualizado com sucesso." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao atualizar funcionário." });
+  }
+});
+
+// Rota para deletar um funcionário
+router.delete("/:id", async (req, res) => {
+  try {
+    const funcionarioID = req.params.id;
+    await FuncionarioModel.deleteFuncionario(funcionarioID);
+    res.status(204).end();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao deletar funcionário." });
   }
 });
 
