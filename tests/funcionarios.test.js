@@ -119,4 +119,48 @@ describe("Testes de Funcionários", () => {
     expect(res.body.funcionario.usuario).toEqual("login.func");
     expect(res.body.funcionario.nivelacesso).toEqual(1);
   });
+
+  test("Deve obter um funcionário por ID", async () => {
+    const criado = await api.post("/funcionario").send({
+      nome: "Funcionário GetById",
+      cargo: "QA",
+      usuario: "getbyid.func",
+      senha: "Get@123",
+      nivelacesso: 1,
+    });
+
+    expect(criado.statusCode).toEqual(201);
+    const id = criado.body.id;
+
+    const res = await api.get(`/funcionario/${id}`);
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toBeDefined();
+
+    expect(res.body.id).toEqual(id);
+    expect(res.body.nome).toEqual("Funcionário GetById");
+    expect(res.body.usuario).toEqual("getbyid.func");
+    expect(res.body.nivelacesso).toEqual(1);
+
+    // garante que não vazou hash/senha
+    expect(res.body.hashsenha).toBeUndefined();
+    expect(res.body.senha).toBeUndefined();
+  });
+
+  test("Deve retornar 404 ao buscar funcionário inexistente por ID", async () => {
+    const res = await api.get("/funcionario/99999999");
+
+    expect(res.statusCode).toEqual(404);
+    expect(res.body.message).toEqual("Funcionário não encontrado.");
+  });
+
+  test("Deve retornar 400 ao buscar funcionário com userId inválido", async () => {
+    const res1 = await api.get("/funcionario/abc");
+    expect(res1.statusCode).toEqual(400);
+    expect(res1.body.message).toEqual("userId inválido.");
+
+    const res2 = await api.get("/funcionario/-1");
+    expect(res2.statusCode).toEqual(400);
+    expect(res2.body.message).toEqual("userId inválido.");
+  });
 });
